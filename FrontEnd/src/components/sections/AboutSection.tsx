@@ -1,6 +1,7 @@
 import { CheckCircle2 } from 'lucide-react';
 
 export function AboutSection() {
+{/* array que armazena a lista */}
   const features = [
     'Profissionais certificadas e em formação contínua',
     'Produtos de marcas premium e veganas',
@@ -12,7 +13,7 @@ export function AboutSection() {
     <section className="py-20 bg-[#f2ece8] px-6 lg:px-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         
-        {/* Imagem com Selo */}
+
         <div className="relative">
           <div className="rounded-3xl overflow-hidden shadow-lg aspect-[4/3]">
             <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1000&q=80" alt="Nossa História" className="w-full h-full object-cover" />
@@ -23,7 +24,7 @@ export function AboutSection() {
           </div>
         </div>
 
-        {/* Conteúdo do Texto */}
+     
         <div className="space-y-6 lg:pl-6">
           <span className="text-xs uppercase tracking-widest text-[#a3644f] font-semibold">Nossa História</span>
           <h2 className="text-4xl sm:text-5xl font-serif text-[#2c2825] leading-tight">
@@ -36,6 +37,11 @@ export function AboutSection() {
             Nossa equipe de profissionais especializadas está sempre em formação contínua para oferecer o que há de mais atual em beleza e bem-estar.
           </p>
 
+  
+    {/* 
+  Mapeia o array 'features' para exibir a lista de diferenciais do salão.
+  Cada item é renderizado em um <li> alinhado com o ícone de check (CheckCircle2).
+   */}
           <ul className="space-y-3 pt-2 text-sm text-[#4a423e]">
             {features.map((feature, index) => (
               <li key={index} className="flex items-center gap-3">
