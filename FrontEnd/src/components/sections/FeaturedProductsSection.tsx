@@ -1,3 +1,5 @@
+Feacturedprojectsection.tsx 
+
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '../ui/ProductCard';
 
@@ -13,13 +15,13 @@ export function FeaturedProductsSection() {
       category: 'Cabelo',
       title: 'Condicionador Reparador',
       price: 'R$ 55,00',
-      image: 'https://images.unsplash.com/photo-1608248597261-833258657640?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=600&q=80',
     },
     {
       category: 'Cabelo',
       title: 'Máscara Capilar Intensiva',
       price: 'R$ 94,00',
-      image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
     },
     {
       category: 'Cabelo',
@@ -30,7 +32,7 @@ export function FeaturedProductsSection() {
   ];
 
   return (
-    <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto">
+    <section id="produtos" className="py-20 px-6 lg:px-12 max-w-7xl mx-auto">
       <div className="flex justify-between items-end mb-12">
         <div>
           <span className="text-xs uppercase tracking-widest text-[#a3644f] font-semibold">Loja</span>
@@ -40,7 +42,6 @@ export function FeaturedProductsSection() {
           Ver todos os produtos <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product, index) => (
           <ProductCard 
