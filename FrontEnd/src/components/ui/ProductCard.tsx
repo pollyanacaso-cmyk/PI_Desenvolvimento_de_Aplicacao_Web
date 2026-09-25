@@ -5,7 +5,14 @@ interface ProductCardProps {
   image: string;
 }
 
-export function ProductCard({ category, title, price, image }: ProductCardProps) {
+export function ProductCard({ category, title, price, image }: ProductCardProps) { 
+  {/*{/* Define o componente de cartão de produto reutilizável,
+  recebendo suas informações via props
+  
+  é tb o TypeScript garantindo a segurança
+  ele obriga o TypeScript a conferir se estamos enviando a imagem,
+  o título, o preço e a categoria corretos para o cartão. */}
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-[#eee6e2] shadow-sm hover:shadow-md transition-shadow">
       <div className="h-64 overflow-hidden bg-[#f8f5f2]">
