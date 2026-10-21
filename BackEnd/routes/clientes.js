@@ -1,67 +1,206 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
+const { Cliente } = require('../config/db').models;
 
-// GET
+function tratarTexto(valor) {
+  if (typeof valor !== 'string') {
+    return valor;
+  }
+
+  const texto = valor.trim();
+  return texto === '' ? null : texto;
+}
+
+function validarEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validarDados(dados) {
+  if (dados.nome !== undefined) {
+    dados.nome = tratarTexto(dados.nome);
+
+    if (!dados.nome) {
+      return 'O nome é obrigatório e não pode conter apenas espaços';
+    }
+  }
+
+  if (dados.telefone !== undefined) {
+    dados.telefone = tratarTexto(dados.telefone);
+  }
+
+  if (dados.email !== undefined) {
+    dados.email = tratarTexto(dados.email);
+
+    if (dados.email !== null) {
+      dados.email = dados.email.toLowerCase();
+
+      if (!validarEmail(dados.email)) {
+        return 'O e-mail informado não é válido';
+      }
+    }
+  }
+
+  if (dados.cpf !== undefined) {
+    dados.cpf = tratarTexto(dados.cpf);
+  }
+
+  if (dados.data_nascimento !== undefined && dados.data_nascimento !== null) {
+    if (
+      typeof dados.data_nascimento !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(dados.data_nascimento) ||
+      Number.isNaN(Date.parse(`${dados.data_nascimento}T00:00:00Z`)) ||
+      new Date(`${dados.data_nascimento}T00:00:00Z`).toISOString().slice(0, 10) !== dados.data_nascimento
+    ) {
+      return 'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD';
+    }
+
+    if (new Date(`${dados.data_nascimento}T00:00:00Z`) > new Date()) {
+      return 'A data de nascimento não pode estar no futuro';
+    }
+  }
+
+  if (dados.ativo !== undefined && typeof dados.ativo !== 'boolean') {
+    return 'O campo ativo deve ser verdadeiro ou falso';
+  }
+
+  return null;
+}
+
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM clientes');
-    res.json(rows);
+    const clientes = await Cliente.findAll();
+    res.json(clientes);
   } catch (err) {
-    res.status(500).json({ erro: err.message });
+    res.status(500).json({ erro: 'Erro ao consultar clientes' });
   }
 });
 
-// GET
 router.get('/:id', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM clientes WHERE id = ?', [req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
-    res.json(rows[0]);
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ erro: 'O ID informado é inválido' });
+    }
+
+    const cliente = await Cliente.findByPk(id);
+
+    if (!cliente) {
+      return res.status(404).json({ erro: 'Cliente não encontrado' });
+    }
+
+    res.json(cliente);
   } catch (err) {
-    res.status(500).json({ erro: err.message });
+    res.status(500).json({ erro: 'Erro ao consultar cliente' });
   }
 });
 
-// POST
 router.post('/', async (req, res) => {
   try {
-    const { nome, telefone, email } = req.body;
-    if (!nome) return res.status(400).json({ erro: 'O campo nome é obrigatório' });
+    const dados = {
+      nome: req.body.nome,
+      telefone: req.body.telefone,
+      email: req.body.email,
+      cpf: req.body.cpf,
+      data_nascimento: req.body.data_nascimento,
+      ativo: req.body.ativo
+    };
 
-    const [result] = await db.query(
-      'INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)',
-      [nome, telefone, email]
-    );
-    res.status(201).json({ id: result.insertId, nome, telefone, email });
+    if (dados.nome === undefined) {
+      return res.status(400).json({ erro: 'O campo nome é obrigatório' });
+    }
+
+    const erroValidacao = validarDados(dados);
+
+    if (erroValidacao) {
+      return res.status(400).json({ erro: erroValidacao });
+    }
+
+    const cliente = await Cliente.create(dados);
+    res.status(201).json(cliente);
   } catch (err) {
-    res.status(500).json({ erro: err.message });
+    if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({
+        erro: 'Os dados informados são inválidos ou já estão cadastrados',
+        detalhes: err.errors?.map((item) => item.message)
+      });
+    }
+
+    res.status(500).json({ erro: 'Erro interno ao cadastrar cliente' });
   }
 });
 
-// PUT
 router.put('/:id', async (req, res) => {
   try {
-    const { nome, telefone, email } = req.body;
-    const [result] = await db.query(
-      'UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE id = ?',
-      [nome, telefone, email, req.params.id]
-    );
-    if (result.affectedRows === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
-    res.json({ id: req.params.id, nome, telefone, email });
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ erro: 'O ID informado é inválido' });
+    }
+
+    const cliente = await Cliente.findByPk(id);
+
+    if (!cliente) {
+      return res.status(404).json({ erro: 'Cliente não encontrado' });
+    }
+
+    const campos = [
+      'nome',
+      'telefone',
+      'email',
+      'cpf',
+      'data_nascimento',
+      'ativo'
+    ];
+
+    const dados = {};
+
+    campos.forEach((campo) => {
+      if (req.body[campo] !== undefined) {
+        dados[campo] = req.body[campo];
+      }
+    });
+
+    const erroValidacao = validarDados(dados);
+
+    if (erroValidacao) {
+      return res.status(400).json({ erro: erroValidacao });
+    }
+
+    await cliente.update(dados);
+    res.json(cliente);
   } catch (err) {
-    res.status(500).json({ erro: err.message });
+    if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({
+        erro: 'Os dados informados são inválidos ou já estão cadastrados',
+        detalhes: err.errors?.map((item) => item.message)
+      });
+    }
+
+    res.status(500).json({ erro: 'Erro interno ao atualizar cliente' });
   }
 });
 
-// DELETE
 router.delete('/:id', async (req, res) => {
   try {
-    const [result] = await db.query('DELETE FROM clientes WHERE id = ?', [req.params.id]);
-    if (result.affectedRows === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ erro: 'O ID informado é inválido' });
+    }
+
+    const cliente = await Cliente.findByPk(id);
+
+    if (!cliente) {
+      return res.status(404).json({ erro: 'Cliente não encontrado' });
+    }
+
+    await cliente.destroy();
     res.json({ mensagem: 'Cliente removido com sucesso' });
   } catch (err) {
-    res.status(500).json({ erro: err.message });
+    res.status(500).json({
+      erro: 'Não foi possível remover o cliente. Verifique se ele está relacionado a um agendamento.'
+    });
   }
 });
 
