@@ -1,17 +1,17 @@
 
 # Ke Bella
 
-Sistema web para **gestão de agendamentos e produtos** do salão de beleza Ke Bella, localizado em Espírito Santo do Pinhal.
+Sistema web para **gestão de agendamentos** do salão de beleza Ke Bella, localizado em Espírito Santo do Pinhal.
 
 ##  Sobre o Projeto
 
-O projeto tem como objetivo facilitar a administração do salão, permitindo o gerenciamento de **clientes, profissionais, serviços, agendamentos, produtos e estoque**.
+O projeto tem como objetivo facilitar a administração do salão, permitindo o gerenciamento de **clientes, profissionais, serviços e agendamentos** e a geração de relatórios no formato "excel", facilitando o controle de faturamento.
 
 O sistema também permitirá que administradores bloqueiem horários em que os profissionais não estiverem disponíveis.
 
 ##  Objetivo
 
-Desenvolver uma plataforma web que centralize a gestão do salão, tornando o controle de agendamentos e produtos mais organizado e acessível.
+Desenvolver uma plataforma web que centralize a gestão do salão, tornando o controle de agendamentos mais organizado e acessível.
 
 ##  Funcionalidades
 
@@ -19,14 +19,11 @@ Desenvolver uma plataforma web que centralize a gestão do salão, tornando o co
 * Cadastro de profissionais;
 * Cadastro de serviços;
 * Cadastro de administradores;
-* Gerenciamento de produtos;
-* Controle de estoque;
 * Agendamento de serviços;
 * Consulta de horários disponíveis;
 * Alteração e cancelamento de agendamentos;
 * Bloqueio de horários dos profissionais;
 * Login e autenticação de usuários;
-* Registro de vendas de produtos.
 
 ##  Tecnologias
 
@@ -57,7 +54,7 @@ Os requisitos funcionais estão documentados no projeto e definem as funcionalid
 
 Os requisitos não funcionais definem características como **segurança, desempenho, responsividade, usabilidade e disponibilidade**.
 
-### Regras de Negócio. 
+### Regras de Negócio  
 
 As regras de negócio definem as condições para o funcionamento dos **agendamentos, profissionais, horários, produtos e estoque**.
 
