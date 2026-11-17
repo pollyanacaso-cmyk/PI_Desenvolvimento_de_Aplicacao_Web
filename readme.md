@@ -5,7 +5,7 @@ Sistema web para **gestão de agendamentos** do salão de beleza Ke Bella, local
 
 ##  Sobre o Projeto
 
-O projeto tem como objetivo facilitar a administração do salão, permitindo o gerenciamento de **clientes, profissionais, serviços e agendamentos** e a geração de relatórios no formato "excel", facilitando o controle de faturamento.
+O projeto tem como objetivo facilitar a administração do salão, permitindo o gerenciamento de **clientes, profissionais, serviços e agendamentos**, além da geração de relatórios no formato "excel", facilitando o controle de faturamento.
 
 O sistema também permitirá que administradores bloqueiem horários em que os profissionais não estiverem disponíveis.
 
