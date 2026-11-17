@@ -57,7 +57,7 @@ Os requisitos funcionais estão documentados no projeto e definem as funcionalid
 
 Os requisitos não funcionais definem características como **segurança, desempenho, responsividade, usabilidade e disponibilidade**.
 
-### Regras de Negócio
+### Regras de Negócio. 
 
 As regras de negócio definem as condições para o funcionamento dos **agendamentos, profissionais, horários, produtos e estoque**.
 
