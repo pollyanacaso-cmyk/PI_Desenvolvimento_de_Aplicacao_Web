@@ -71,7 +71,7 @@ Projeto desenvolvido para a disciplina de **Desenvolvimento de Interface Web —
 
 Eduardo Mangueira de Castro Moraes - 25001267   
 Julia Gabrieli Beraldo - 25002215   
-Luis Felipe Coelho - 21001003   
+Luis Felipe Coelho - 25001003   
 Murilo Colli Barbosa - 25000458   
 Pedro Ignácio de Oliveira Bortolon  - 25000137   
 Pollyana Caso - 25001334   
