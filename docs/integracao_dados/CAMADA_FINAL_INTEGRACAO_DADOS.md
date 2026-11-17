@@ -517,7 +517,7 @@ demonstrem:
 
 <img width="1907" height="912" alt="image" src="https://github.com/user-attachments/assets/9bca6ffc-6335-454d-8d83-f70d24787cba" />
 
-<img width="1917" height="902" alt="image" src="https://github.com/user-attachments/assets/40bc9bd9-4b3d-4c3f-b6ee-e87e9ff030d4" />
+<img width="1600" height="752" alt="image" src="https://github.com/user-attachments/assets/00761159-d138-43b0-96c5-25c0ee32c48d" />
 
 <img width="1913" height="837" alt="image" src="https://github.com/user-attachments/assets/81670ae0-1feb-48ed-bbf0-ce7cfdbe24af" />
 
