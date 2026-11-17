@@ -511,10 +511,6 @@ profissional.
 
 ## 11. Evidências de funcionamento
 
-As evidências devem ser registradas a partir da execução real do
-projeto. Recomenda-se incluir no repositório capturas de tela que
-demonstrem:
-
 <img width="1600" height="761" alt="image" src="https://github.com/user-attachments/assets/b1a0ed10-9025-4e95-9846-46745922993a" />
 
 <img width="1600" height="752" alt="image" src="https://github.com/user-attachments/assets/00761159-d138-43b0-96c5-25c0ee32c48d" />
