@@ -1,7 +1,5 @@
-# Camada Final de Integração e Disponibilização dos Dados --- Ke Bella
+# Camada Final de Integração e Disponibilização dos Dados --- Ke Bella  
 
-**Atividade:** Projeto de Extensão --- 10/11/2026\
-**Professor:** Prof. Max\
 **Projeto:** Ke Bella --- Sistema Web de Gestão de Salão de Beleza
 
 ------------------------------------------------------------------------
@@ -36,8 +34,7 @@ A integração documentada contempla:
     relatórios.
 
 A implementação analisada utiliza os próprios dados operacionais do Ke
-Bella. Não foi identificada uma integração com uma API externa de dados
-nem um processo ETL independente. O tratamento descrito neste documento
+Bella. O tratamento descrito neste projeto
 acontece principalmente no Back-End, durante as consultas, a aplicação
 dos filtros, a consolidação dos indicadores e a geração dos relatórios.
 
@@ -45,23 +42,11 @@ dos filtros, a consolidação dos indicadores e a geração dos relatórios.
 
 A aplicação está organizada em três camadas principais:
 
-  -----------------------------------------------------------------------
-  Camada                  Tecnologia              Responsabilidade
-  ----------------------- ----------------------- -----------------------
-  Banco de dados          MySQL                   Persistir os dados do
-                                                  sistema
-
-  Back-End                Node.js, Express e      Acessar o banco,
-                          Sequelize               aplicar regras,
-                                                  autenticar usuários e
-                                                  disponibilizar
-                                                  endpoints
-
-  Front-End               React, TypeScript e     Apresentar as
-                          Vite                    informações e permitir
-                                                  a interação dos
-                                                  usuários
-  -----------------------------------------------------------------------
+| Camada | Tecnologia | Responsabilidade |
+|---|---|---|
+| **Banco de dados** | MySQL | Armazenar e organizar os dados do sistema. |
+| **Back-End** | Node.js, Express e Sequelize | Gerenciar o acesso ao banco de dados, aplicar regras de negócio, autenticar usuários e disponibilizar os endpoints da API. |
+| **Front-End** | React, TypeScript e Vite | Apresentar as informações ao usuário e permitir a interação com as funcionalidades do sistema. |
 
 O ExcelJS é utilizado no Back-End para montar o arquivo `.xlsx` a partir
 dos dados consultados no banco. Ele é uma biblioteca instalada no
@@ -69,21 +54,8 @@ próprio projeto, e não um serviço ou uma API externa.
 
 ### 3.1. Diagrama geral
 
-``` mermaid
-flowchart TD
-    A[Usuário do Ke Bella] --> B[Front-End React]
-    B -->|Requisições HTTP e token JWT| C[API Node.js / Express]
-    C --> D[Rotas e Controllers]
-    D --> E[Sequelize e Models]
-    E --> F[(Banco de dados MySQL)]
-    F --> E
-    E --> D
-    D --> C
-    C -->|JSON| B
-    D -->|Dados consultados e consolidados| G[ExcelJS]
-    G -->|Arquivo .xlsx| C
-    C -->|Download do relatório| B
-```
+<img width="1680" height="207" alt="image" src="https://github.com/user-attachments/assets/e3e33de8-f642-4b59-8c9c-eeb2fdc735fa" />
+
 
 ### 3.2. Organização dos componentes
 
@@ -127,18 +99,14 @@ e acessados pelo Back-End.
 
 As principais entidades mapeadas pelos Models são:
 
-  Entidade             Finalidade
-  -------------------- ------------------------------------------
-  `Cliente`            Dados dos clientes
-  `Profissional`       Dados dos profissionais
-  `Servico`            Serviços oferecidos e seus preços
-  `Agendamento`        Agendamentos, datas, horários e status
-  `Administrador`      Dados de acesso administrativo
-  `Produto`            Produtos cadastrados
-  `CategoriaProduto`   Categorias dos produtos
-  `Venda`              Registros de vendas
-  `Avaliacao`          Avaliações relacionadas aos atendimentos
-  `BloqueioHorario`    Horários bloqueados dos profissionais
+| Entidade | Finalidade |
+|---|---|
+| **Cliente** | Dados dos clientes |
+| **Profissional** | Dados dos profissionais |
+| **Servico** | Serviços oferecidos e seus preços |
+| **Agendamento** | Agendamentos, datas, horários e status |
+| **Administrador** | Dados de acesso administrativo |
+| **BloqueioHorario** | Horários bloqueados dos profissionais |
 
 ### 4.1. Relacionamentos entre os dados
 
@@ -148,30 +116,12 @@ os principais vínculos estão:
 -   um cliente pode possuir vários agendamentos;
 -   um profissional pode possuir vários agendamentos;
 -   um serviço pode estar associado a vários agendamentos;
--   clientes, profissionais e agendamentos podem estar relacionados a
-    avaliações;
--   uma categoria pode possuir vários produtos;
 -   um profissional pode possuir vários bloqueios de horário;
--   um produto pode estar relacionado a várias vendas;
--   clientes e administradores podem estar relacionados a vendas.
 
 ### 4.2. Diagrama simplificado dos relacionamentos
 
-``` mermaid
-erDiagram
-    CLIENTE ||--o{ AGENDAMENTO : realiza
-    PROFISSIONAL ||--o{ AGENDAMENTO : atende
-    SERVICO ||--o{ AGENDAMENTO : utiliza
-    CLIENTE ||--o{ AVALIACAO : registra
-    PROFISSIONAL ||--o{ AVALIACAO : recebe
-    AGENDAMENTO ||--o{ AVALIACAO : possui
-    CATEGORIA_PRODUTO ||--o{ PRODUTO : classifica
-    PROFISSIONAL ||--o{ BLOQUEIO_HORARIO : possui
-    ADMINISTRADOR ||--o{ BLOQUEIO_HORARIO : registra
-    PRODUTO ||--o{ VENDA : vendido
-    CLIENTE ||--o{ VENDA : realiza
-    ADMINISTRADOR ||--o{ VENDA : registra
-```
+<img width="595" height="231" alt="image" src="https://github.com/user-attachments/assets/c8febae5-4276-48d3-a7ae-0a95ce7a8df3" />
+
 
 O diagrama representa os relacionamentos definidos no arquivo de
 configuração dos Models. A cardinalidade indica que uma entidade pode
@@ -245,18 +195,16 @@ em formato JSON ou, no caso da exportação, um arquivo Excel.
 
 Entre os grupos de rotas registrados em `BackEnd/server.js`, estão:
 
-  Grupo de rotas       Finalidade
-  -------------------- --------------------------------------------
-  `/clientes`          Cadastro e consulta de clientes
-  `/profissionais`     Cadastro e consulta de profissionais
-  `/servicos`          Cadastro e consulta de serviços
-  `/produtos`          Cadastro e consulta de produtos
-  `/agendamentos`      Operações e consultas de agendamentos
-  `/auth`              Autenticação e login
-  `/administradores`   Operações administrativas
-  `/bloqueios`         Consulta e gerenciamento de bloqueios
-  `/vendas`            Consulta e registro de vendas
-  `/relatorios`        Consulta de indicadores e exportação Excel
+| Grupo de rotas | Finalidade |
+|---|---|
+| **`/clientes`** | Cadastro e consulta de clientes |
+| **`/profissionais`** | Cadastro e consulta de profissionais |
+| **`/servicos`** | Consulta de serviços |
+| **`/agendamentos`** | Operações e consultas de agendamentos |
+| **`/auth`** | Autenticação e login |
+| **`/administradores`** | Operações administrativas |
+| **`/bloqueios`** | Consulta e gerenciamento de bloqueios |
+| **`/relatorios`** | Consulta de indicadores e exportação Excel |
 
 Os endpoints possuem regras de acesso diferentes conforme a
 funcionalidade. As rotas protegidas utilizam os middlewares de
@@ -302,21 +250,12 @@ interface administrativa/profissional.
 
 Os principais arquivos envolvidos são:
 
-  ----------------------------------------------------------------------------------
-  Arquivo                                        Responsabilidade
-  ---------------------------------------------- -----------------------------------
-  `BackEnd/controllers/relatorioController.js`   Consulta, consolida os dados,
-                                                 calcula os indicadores e gera a
-                                                 planilha
-
-  `BackEnd/routes/relatorioRoutes.js`            Define os endpoints e aplica
-                                                 autenticação e autorização
-
-  `FrontEnd/src/pages/AdminDashboard.tsx`        Apresenta filtros, indicadores,
-                                                 tabela e botão de exportação
-
-  `BackEnd/package.json`                         Declara a dependência `exceljs`
-  ----------------------------------------------------------------------------------
+| Arquivo | Responsabilidade |
+|---|---|
+| **`BackEnd/controllers/relatorioController.js`** | Consulta e consolida os dados, calcula os indicadores e gera a planilha |
+| **`BackEnd/routes/relatorioRoutes.js`** | Define os endpoints e aplica autenticação e autorização |
+| **`FrontEnd/src/pages/AdminDashboard.tsx`** | Apresenta filtros, indicadores, tabela e botão de exportação |
+| **`BackEnd/package.json`** | Declara a dependência `exceljs` |
 
 ### 8.1. Consulta do resumo
 
@@ -329,16 +268,11 @@ GET /relatorios/resumo
 
 Parâmetros opcionais:
 
-  -----------------------------------------------------------------------
-  Parâmetro                           Descrição
-  ----------------------------------- -----------------------------------
-  `dataInicial`                       Data inicial do período consultado
-
-  `dataFinal`                         Data final do período consultado
-
-  `profissionalId`                    ID do profissional, disponível para
-                                      filtro do administrador
-  -----------------------------------------------------------------------
+| Parâmetro | Descrição |
+|---|---|
+| **`dataInicial`** | Data inicial do período consultado |
+| **`dataFinal`** | Data final do período consultado |
+| **`profissionalId`** | ID do profissional, disponível para filtro do administrador |
 
 Exemplo de consulta:
 
@@ -354,8 +288,6 @@ indicadores:
 -   `ticketMedio`: média do valor dos atendimentos concluídos;
 -   `faturamento`: soma dos preços dos serviços dos atendimentos
     concluídos;
--   `lucroEstimado`: permanece `null`, pois o banco atual não possui
-    estrutura de custos e despesas para calcular lucro.
 
 ### 8.2. Regras de cálculo
 
@@ -369,9 +301,6 @@ médio retorna zero.
 Agendamentos pendentes, confirmados, agendados ou cancelados não entram
 no cálculo do faturamento. Eles continuam podendo aparecer na listagem
 do período, conforme os filtros aplicados.
-
-O sistema não apresenta lucro líquido como indicador calculado, pois não
-há dados de custos e despesas cadastrados para sustentar esse cálculo.
 
 ### 8.3. Exportação para Excel
 
@@ -421,31 +350,8 @@ disponibiliza o arquivo com o nome `relatorio-ke-bella.xlsx`.
 
 ### 8.4. Fluxo de exportação
 
-``` mermaid
-sequenceDiagram
-    actor Usuario
-    participant Front as Front-End
-    participant API as API Express
-    participant Auth as Middlewares JWT
-    participant Controller as RelatorioController
-    participant DB as MySQL
-    participant Excel as ExcelJS
+<img width="1198" height="663" alt="image" src="https://github.com/user-attachments/assets/cc09aa9b-2dfe-4b01-97e6-08fe388fc6c5" />
 
-    Usuario->>Front: Seleciona período e profissional
-    Usuario->>Front: Clica em Exportar Excel
-    Front->>API: GET /relatorios/excel + Bearer Token
-    API->>Auth: Valida token e perfil
-    Auth-->>API: Usuário autorizado
-    API->>Controller: Executa exportação
-    Controller->>DB: Consulta agendamentos e relacionamentos
-    DB-->>Controller: Retorna registros
-    Controller->>Controller: Aplica filtros e calcula resumo
-    Controller->>Excel: Monta as abas da planilha
-    Excel-->>Controller: Gera conteúdo XLSX
-    Controller-->>API: Retorna arquivo XLSX
-    API-->>Front: Resposta para download
-    Front-->>Usuario: Disponibiliza relatorio-ke-bella.xlsx
-```
 
 ### 8.5. Consumo pelo Front-End
 
@@ -495,10 +401,6 @@ informações utilizadas pelas funcionalidades e pelos relatórios.
     administrador, por profissional.
 -   O profissional tem seus relatórios limitados ao próprio ID.
 -   O faturamento considera somente registros com status `Concluído`.
--   O ticket médio evita divisão por zero quando não existem
-    atendimentos concluídos.
--   O lucro não é calculado quando não existem dados de custos e
-    despesas.
 
 ### 9.3. Segurança e acesso
 
@@ -513,13 +415,13 @@ informações utilizadas pelas funcionalidades e pelos relatórios.
 
 O servidor possui tratamento para situações como:
 
-  Situação                                Resposta prevista
-  --------------------------------------- -------------------
-  Corpo da requisição com JSON inválido   HTTP 400
-  Rota inexistente                        HTTP 404
-  Token ausente, inválido ou expirado     HTTP 401
-  Perfil sem permissão                    HTTP 403
-  Erro interno não tratado                HTTP 500
+| Situação | Resposta prevista |
+|---|---|
+| Corpo da requisição com JSON inválido | **HTTP 400** |
+| Rota inexistente | **HTTP 404** |
+| Token ausente, inválido ou expirado | **HTTP 401** |
+| Perfil sem permissão | **HTTP 403** |
+| Erro interno não tratado | **HTTP 500** |
 
 Os controllers de relatório também tratam falhas de consulta e
 exportação, retornando mensagens de erro ao consumidor da API.
@@ -575,28 +477,14 @@ A existência das tabelas também pode ser conferida pelo MySQL Workbench.
 Com o servidor ativo, realizar as seguintes verificações no Insomnia ou
 ferramenta equivalente:
 
-  ----------------------------------------------------------------------------------------------------------------------
-  Teste                   Requisição                                                             Resultado esperado
-  ----------------------- ---------------------------------------------------------------------- -----------------------
-  API ativa               `GET http://localhost:3000/`                                           Mensagem de API em
-                                                                                                 funcionamento
-
-  Login                   `POST /auth/login`                                                     Retorno de autenticação
-                                                                                                 conforme as credenciais
-
-  Resumo                  `GET /relatorios/resumo`                                               JSON com agendamentos e
-                                                                                                 indicadores
-
-  Resumo por período      `GET /relatorios/resumo?dataInicial=AAAA-MM-DD&dataFinal=AAAA-MM-DD`   Dados limitados ao
-                                                                                                 período
-
-  Resumo por profissional `GET /relatorios/resumo?profissionalId=ID`                             Dados do profissional
-                                                                                                 selecionado, para
-                                                                                                 administrador
-
-  Exportação              `GET /relatorios/excel`                                                Download ou resposta
-                                                                                                 binária do arquivo XLSX
-  ----------------------------------------------------------------------------------------------------------------------
+| Teste | Requisição | Resultado esperado |
+|---|---|---|
+| **API ativa** | `GET http://localhost:3000/` | Mensagem de API em funcionamento |
+| **Login** | `POST /auth/login` | Retorno de autenticação conforme as credenciais |
+| **Resumo** | `GET /relatorios/resumo` | JSON com agendamentos e indicadores |
+| **Resumo por período** | `GET /relatorios/resumo?dataInicial=AAAA-MM-DD&dataFinal=AAAA-MM-DD` | Dados limitados ao período |
+| **Resumo por profissional** | `GET /relatorios/resumo?profissionalId=ID` | Dados do profissional selecionado, para administrador |
+| **Exportação** | `GET /relatorios/excel` | Download ou resposta binária do arquivo XLSX |
 
 Para as rotas de relatório, incluir o token válido no cabeçalho:
 
@@ -627,76 +515,12 @@ As evidências devem ser registradas a partir da execução real do
 projeto. Recomenda-se incluir no repositório capturas de tela que
 demonstrem:
 
-  -----------------------------------------------------------------------
-  Evidência                           O que deve mostrar
-  ----------------------------------- -----------------------------------
-  01 --- Inicialização do Back-End    Conexão com MySQL, sincronização e
-                                      servidor iniciado
+<img width="1907" height="912" alt="image" src="https://github.com/user-attachments/assets/9bca6ffc-6335-454d-8d83-f70d24787cba" />
 
-  02 --- Banco de dados               Banco e tabelas visualizados no
-                                      MySQL Workbench
+<img width="1917" height="902" alt="image" src="https://github.com/user-attachments/assets/40bc9bd9-4b3d-4c3f-b6ee-e87e9ff030d4" />
 
-  03 --- API de resumo                Resposta JSON do endpoint
-                                      `/relatorios/resumo`
+<img width="1913" height="837" alt="image" src="https://github.com/user-attachments/assets/81670ae0-1feb-48ed-bbf0-ce7cfdbe24af" />
 
-  04 --- Relatórios na interface      Filtros, indicadores e listagem na
-                                      aba `Relatórios`
-
-  05 --- Exportação Excel             Arquivo `.xlsx` baixado e aberto
-
-  06 --- Conteúdo da planilha         Abas `Agendamentos` e
-                                      `Resumo Diário`
-
-  07 --- Controle por perfil          Consulta realizada com perfil
-                                      profissional, demonstrando a
-                                      restrição dos próprios dados
-  -----------------------------------------------------------------------
-
-As imagens devem ser adicionadas somente depois de os testes serem
-executados. Não se deve apresentar uma captura ilustrativa como se fosse
-uma evidência de execução real.
-
-Sugestão de organização:
-
-``` text
-Documentacao/
-└── integracao_dados/
-    ├── CAMADA_FINAL_INTEGRACAO_DADOS.md
-    └── evidencias/
-        ├── 01-inicializacao-backend.png
-        ├── 02-banco-mysql.png
-        ├── 03-api-resumo.png
-        ├── 04-tela-relatorios.png
-        ├── 05-exportacao-excel.png
-        ├── 06-planilha-gerada.png
-        └── 07-acesso-profissional.png
-```
-
-## 12. Limitações identificadas
-
-A documentação considera a implementação presente no código analisado.
-Algumas limitações devem ser consideradas na interpretação dos
-resultados:
-
--   A integração utiliza os dados internos do banco MySQL; não foi
-    identificado consumo de fonte externa de dados nesta camada.
--   A geração do Excel é realizada localmente pelo Back-End com a
-    biblioteca ExcelJS.
--   O faturamento considera o preço atual do serviço associado ao
-    agendamento. O código não demonstra um registro histórico do preço
-    praticado no momento em que cada agendamento foi criado.
--   O lucro não é calculado porque não há dados de custos e despesas
-    suficientes no banco.
--   O código aplica os filtros de data recebidos na consulta, mas não
-    apresenta, nesse controller, validação específica para todos os
-    formatos ou para a coerência entre data inicial e data final.
--   A sincronização atual cria tabelas ausentes, mas não substitui um
-    processo controlado de migração para alterações estruturais em
-    tabelas já existentes.
-
-Esses pontos não impedem a demonstração do fluxo de integração
-implementado, mas delimitam o que os relatórios podem afirmar com
-segurança.
 
 ## 13. Resultado da atividade
 
@@ -715,8 +539,3 @@ Dessa forma, a aplicação apresenta um fluxo de dados integrado desde sua
 origem no banco até o consumo pelas interfaces e pela exportação de
 relatórios, acompanhado de regras de negócio e controles de qualidade
 descritos nesta documentação.
-
-------------------------------------------------------------------------
-
-**Documento referente à atividade do Projeto de Extensão de 10/11/2026
---- Camada Final de Integração e Disponibilização dos Dados.**
