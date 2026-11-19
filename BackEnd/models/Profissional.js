@@ -20,6 +20,10 @@ const Profissional = sequelize.define('Profissional', {
   email: {
     type: DataTypes.STRING(150)
   },
+  senha_hash: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
   descricao: {
     type: DataTypes.TEXT
   },
