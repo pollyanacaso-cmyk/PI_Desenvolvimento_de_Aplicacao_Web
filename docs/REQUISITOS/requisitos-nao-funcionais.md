@@ -8,4 +8,3 @@
 * **RNF06:** O sistema deve funcionar nos principais navegadores atuais.
 * **RNF07:** O código deve ser organizado e de fácil manutenção.
 * **RNF08:** O banco de dados deve garantir a integridade e consistência das informações.
-
