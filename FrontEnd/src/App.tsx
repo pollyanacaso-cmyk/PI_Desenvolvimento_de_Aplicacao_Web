@@ -114,4 +114,4 @@ export function App() {
     {(currentPage === 'home' || currentPage === 'services') && <CartBar itensCarrinho={itensCarrinho} onAvancar={handleNavigateBooking} onRemover={(id) => setItensCarrinho(prev => prev.filter(item => item.servico.id !== id))}/>}
   </div>;
 }
-export default App;
+export default App; 
