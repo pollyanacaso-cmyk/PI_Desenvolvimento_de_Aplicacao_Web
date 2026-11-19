@@ -32,7 +32,7 @@ const BloqueioHorario = sequelize.define('BloqueioHorario', {
   },
   administrador_id: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   liberado_por_id: {
     type: DataTypes.INTEGER,
