@@ -4,7 +4,7 @@ export interface UserMenuProps {
   usuarioNome?: string;
   usuarioTipo?: 'cliente' | 'admin' | 'profissional';
   onNavigateLogin?: () => void;
-  onNavigateDashboard?: () => void;
+  onNavigateDashboard?: () => void; 
   onLogout?: () => void;
 }
 export function UserMenu({ usuarioNome, usuarioTipo = 'cliente', onNavigateLogin, onNavigateDashboard, onLogout }: UserMenuProps) {
