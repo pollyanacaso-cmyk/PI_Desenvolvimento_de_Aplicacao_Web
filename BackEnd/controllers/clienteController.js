@@ -62,7 +62,7 @@ function validarDados(dados) {
 
 const listar = async (req, res) => {
   try {
-    const clientes = await Cliente.findAll();
+    const clientes = await Cliente.findAll({ attributes: { exclude: ['senha'] }, include: [] });
     res.json(clientes);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao consultar clientes' });
@@ -77,7 +77,7 @@ const buscarPorId = async (req, res) => {
       return res.status(400).json({ erro: 'O ID informado é inválido' });
     }
 
-    const cliente = await Cliente.findByPk(id);
+    const cliente = await Cliente.findByPk(id, { attributes: { exclude: ['senha'] } });
 
     if (!cliente) {
       return res.status(404).json({ erro: 'Cliente não encontrado' });
@@ -138,7 +138,7 @@ const atualizar = async (req, res) => {
       return res.status(400).json({ erro: 'O ID informado é inválido' });
     }
 
-    const cliente = await Cliente.findByPk(id);
+    const cliente = await Cliente.findByPk(id, { attributes: { exclude: ['senha'] } });
 
     if (!cliente) {
       return res.status(404).json({ erro: 'Cliente não encontrado' });
@@ -190,7 +190,7 @@ const remover = async (req, res) => {
       return res.status(400).json({ erro: 'O ID informado é inválido' });
     }
 
-    const cliente = await Cliente.findByPk(id);
+    const cliente = await Cliente.findByPk(id, { attributes: { exclude: ['senha'] } });
 
     if (!cliente) {
       return res.status(404).json({ erro: 'Cliente não encontrado' });
