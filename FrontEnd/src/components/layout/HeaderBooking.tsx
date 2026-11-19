@@ -55,7 +55,7 @@ export function HeaderBooking({
               </span>
             )}
           </button>
-
+ 
           {/* Login (deslogado) ou mini card do usuário (logado) */}
           <UserMenu
             usuarioNome={usuarioNome}
