@@ -1,14 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const bloqueioController = require('../controllers/bloqueioController');
+const router = require('express').Router();
+const controller = require('../controllers/bloqueioController');
 const autenticarToken = require('../middlewares/autenticarToken');
 const autorizarPorPerfil = require('../middlewares/autorizarPorPerfil');
-
-router.use(autenticarToken, autorizarPorPerfil('admin'));
-
-router.get('/', bloqueioController.listar);
-router.get('/:id', bloqueioController.buscarPorId);
-router.post('/', bloqueioController.criar);
-router.patch('/:id/liberar', bloqueioController.liberar);
-
+router.use(autenticarToken, autorizarPorPerfil('admin', 'profissional'));
+router.get('/', controller.listar);
+router.get('/:id', controller.buscarPorId);
+router.post('/', controller.criar);
+router.post('/liberar-domingo', controller.liberarDomingo);
+router.delete('/:id', controller.liberar);
+router.patch('/:id/liberar', controller.liberar);
 module.exports = router;
