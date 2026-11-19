@@ -120,7 +120,7 @@ export function Header({
             usuarioNome={usuarioNome}
             usuarioTipo={usuarioTipo}
             onNavigateLogin={onNavigateLogin}
-            onNavigateDashboard={onNavigateDashboard}
+            onNavigateDashboard={onNavigateDashboard} 
             onLogout={onLogout}
           />
 
