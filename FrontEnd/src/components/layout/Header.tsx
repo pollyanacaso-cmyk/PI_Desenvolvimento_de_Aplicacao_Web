@@ -10,13 +10,11 @@ export interface HeaderProps {
   onNavigateDashboard?: () => void;
   onNavigateServices?: () => void;
   onNavigateHome?: () => void;
-  /** Leva até a seção Profissionais da Home (rola direto se já estiver na Home). */
   onNavigateProfessionals?: () => void;
   onLogout?: () => void;
   usuarioNome?: string;
   usuarioTipo?: 'cliente' | 'admin' | 'profissional';
   carrinhoCount?: number;
-  /** Exibe o botão "AGENDE AGORA" (padrão: true). */
   mostrarBotaoAgendar?: boolean;
 }
 
