@@ -7,4 +7,4 @@ export interface ItemCarrinho {
   };
   profissionalId?: number;
   profissionalNome?: string;
-}
+} 
