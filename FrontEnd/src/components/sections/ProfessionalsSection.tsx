@@ -18,7 +18,6 @@ interface DadosContatoEquipe {
   posicaoFoto?: string;
 }
 
-// Fotografias e contatos locais dos profissionais da equipe.
 const equipePorNome: Record<string, DadosContatoEquipe> = {
   'wagner francisco colli tonietti': {
     foto: '/Images/profissionais/wagner.jpg',
@@ -50,7 +49,6 @@ function normalizarNome(nome: string): string {
     .toLowerCase();
 }
 
-// Mantém só dígitos e garante o DDI 55 (Brasil) para o link do WhatsApp.
 function linkWhatsApp(telefone?: string | null): string | null {
   const digitos = String(telefone ?? '').replace(/\D/g, '');
   if (digitos.length < 10) return null;
