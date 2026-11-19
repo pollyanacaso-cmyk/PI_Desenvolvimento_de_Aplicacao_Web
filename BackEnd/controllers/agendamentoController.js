@@ -87,6 +87,7 @@ function validarDados(dados, parcial = false) {
     if (dados.status !== undefined) {
         const statusPermitidos = [
             'Agendado',
+            'Pendente',
             'Confirmado',
             'Concluído',
             'Cancelado'
@@ -140,11 +141,44 @@ async function validarRelacionamentos(dados) {
     return erros;
 }
 
+// Nunca devolver o hash da senha junto com o agendamento
+const INCLUIR_CLIENTE = { model: Cliente, attributes: { exclude: ['senha'] } };
+
 const listar = async (req, res) => {
     try {
+        const where = {};
+        const filtroInformado = req.query.cliente_id;
+        let clienteIdFiltro = null;
+
+        if (filtroInformado !== undefined && filtroInformado !== '') {
+            clienteIdFiltro = Number(filtroInformado);
+
+            if (!Number.isInteger(clienteIdFiltro) || clienteIdFiltro <= 0) {
+                return res.status(400).json({
+                    mensagem: 'O cliente_id informado é inválido.'
+                });
+            }
+        }
+
+        if (req.perfil === 'cliente') {
+            // Cliente só enxerga os próprios agendamentos, venha o que vier na query.
+            if (clienteIdFiltro !== null && clienteIdFiltro !== req.usuario.id) {
+                return res.status(403).json({
+                    mensagem: 'Você não tem permissão para ver agendamentos de outro cliente.'
+                });
+            }
+            where.cliente_id = req.usuario.id;
+        } else if (req.perfil === 'profissional') {
+            where.profissional_id = req.usuario.id;
+        } else if (clienteIdFiltro !== null) {
+            // Admin pode filtrar por qualquer cliente (ou listar todos sem filtro).
+            where.cliente_id = clienteIdFiltro;
+        }
+
         const agendamentos = await Agendamento.findAll({
+            where,
             include: [
-                { model: Cliente },
+                INCLUIR_CLIENTE,
                 { model: Profissional },
                 { model: Servico }
             ],
@@ -175,13 +209,17 @@ const buscarPorId = async (req, res) => {
 
         const agendamento = await Agendamento.findByPk(id, {
             include: [
-                { model: Cliente },
+                INCLUIR_CLIENTE,
                 { model: Profissional },
                 { model: Servico }
             ]
         });
 
-        if (!agendamento) {
+        // Para o cliente, agendamento de outra pessoa é igual a "não existe"
+        if (
+            !agendamento ||
+            (req.perfil === 'cliente' && agendamento.cliente_id !== req.usuario.id) || (req.perfil === 'profissional' && agendamento.profissional_id !== req.usuario.id)
+        ) {
             return res.status(404).json({
                 mensagem: 'Agendamento não encontrado.'
             });
@@ -216,13 +254,13 @@ const criar = async (req, res) => {
         }
 
         const dados = {
-            cliente_id: req.body.cliente_id,
+            cliente_id: req.perfil === 'cliente' ? req.usuario.id : req.body.cliente_id,
             profissional_id: req.body.profissional_id,
             servico_id: req.body.servico_id,
             data: req.body.data,
             horario_inicio: horaInicio,
             horario_fim: horaFim,
-            status: req.body.status === undefined ? 'Agendado' : req.body.status,
+            status: 'Agendado',
             observacoes: tratarTexto(req.body.observacoes)
         };
 
@@ -314,24 +352,16 @@ const atualizar = async (req, res) => {
 
         const agendamento = await Agendamento.findByPk(id);
 
-        if (!agendamento) {
-            return res.status(404).json({
-                mensagem: 'Agendamento não encontrado.'
-            });
+        if (!agendamento || (req.perfil === 'profissional' && agendamento.profissional_id !== req.usuario.id)) {
+            return res.status(404).json({ mensagem: 'Agendamento não encontrado.' });
         }
 
-        const camposPermitidos = [
-            'cliente_id',
-            'profissional_id',
-            'servico_id',
-            'data',
-            'horario_inicio',
-            'horario_fim',
-            'status',
-            'observacoes'
+        const camposPermitidos = req.perfil === 'profissional' ? ['status'] : [
+            'cliente_id', 'profissional_id', 'servico_id', 'data', 'horario_inicio', 'horario_fim', 'status', 'observacoes'
         ];
 
         const dados = {};
+        if (req.perfil === 'profissional' && req.body.profissional_id !== undefined && Number(req.body.profissional_id) !== req.usuario.id) return res.status(403).json({ mensagem: 'Você só pode gerenciar seus próprios atendimentos.' });
 
         for (const campo of camposPermitidos) {
             if (req.body[campo] !== undefined) {
@@ -449,6 +479,40 @@ const atualizar = async (req, res) => {
     }
 };
 
+const cancelarPeloCliente = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ mensagem: 'Informe um ID válido.' });
+        const agendamento = await Agendamento.findByPk(id);
+        if (!agendamento || Number(agendamento.cliente_id) !== Number(req.usuario.id)) {
+            return res.status(404).json({ mensagem: 'Agendamento não encontrado.' });
+        }
+        if (['Cancelado', 'Concluído'].includes(agendamento.status)) {
+            return res.status(409).json({ mensagem: 'Este agendamento não pode mais ser cancelado.' });
+        }
+        // O cliente pode cancelar até 23h59min59s do dia anterior ao atendimento.
+        // A montagem como data local evita deslocamentos causados por conversões UTC.
+        const [ano, mes, dia] = String(agendamento.data).slice(0, 10).split('-').map(Number);
+        const dataHoraAgendamento = new Date(ano, mes - 1, dia);
+
+        if (Number.isNaN(dataHoraAgendamento.getTime())) {
+            return res.status(400).json({ mensagem: 'A data do agendamento é inválida.' });
+        }
+
+        const limiteCancelamento = new Date(ano, mes - 1, dia - 1, 23, 59, 59, 999);
+        if (Date.now() > limiteCancelamento.getTime()) {
+            return res.status(400).json({
+                mensagem: 'O cancelamento só pode ser realizado até 23h59 do dia anterior ao agendamento.'
+            });
+        }
+        await agendamento.update({ status: 'Cancelado' });
+        return res.status(200).json({ mensagem: 'Agendamento cancelado com sucesso.', agendamento });
+    } catch (erro) {
+        console.error(erro);
+        return res.status(500).json({ mensagem: 'Não foi possível cancelar o agendamento.' });
+    }
+};
+
 const remover = async (req, res) => {
     try {
         const id = Number(req.params.id);
@@ -461,10 +525,8 @@ const remover = async (req, res) => {
 
         const agendamento = await Agendamento.findByPk(id);
 
-        if (!agendamento) {
-            return res.status(404).json({
-                mensagem: 'Agendamento não encontrado.'
-            });
+        if (!agendamento || (req.perfil === 'cliente' && agendamento.cliente_id !== req.usuario.id)) {
+            return res.status(404).json({ mensagem: 'Agendamento não encontrado.' });
         }
 
         await agendamento.destroy();
@@ -480,10 +542,44 @@ const remover = async (req, res) => {
     }
 };
 
+const { BloqueioHorario } = require('../models'); // garanta que BloqueioHorario está importado no topo
+
+const consultarAgendaDia = async (req, res) => {
+    try {
+        const { data } = req.query;
+        if (!data || !validarData(data)) {
+            return res.status(400).json({ mensagem: 'Informe uma data válida (AAAA-MM-DD).' });
+        }
+
+        const [agendamentos, bloqueios, liberacoesDomingo] = await Promise.all([
+            Agendamento.findAll({
+                where: {
+                    data,
+                    status: { [require('sequelize').Op.ne]: 'Cancelado' }
+                },
+                attributes: ['id', 'profissional_id', 'horario_inicio', 'horario_fim']
+            }),
+            BloqueioHorario.findAll({
+                where: { data, status: 'Bloqueado' },
+                attributes: ['id', 'profissional_id', 'horario_inicio', 'horario_fim']
+            }),
+            BloqueioHorario.findAll({ where: { data, status: 'Liberado' }, attributes: ['profissional_id'] })
+        ]);
+        const [ano, mes, dia] = data.split('-').map(Number);
+        const ehDomingo = new Date(ano, mes - 1, dia).getDay() === 0;
+        return res.status(200).json({ agendamentos, bloqueios, ehDomingo, profissionaisComDomingoLiberado: liberacoesDomingo.map(x => x.profissional_id) });
+    } catch (erro) {
+        console.error(erro);
+        return res.status(500).json({ mensagem: 'Erro ao consultar disponibilidade do dia.' });
+    }
+};
+
 module.exports = {
     listar,
     buscarPorId,
     criar,
     atualizar,
-    remover
+    cancelarPeloCliente,
+    remover,
+    consultarAgendaDia
 };
