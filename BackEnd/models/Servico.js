@@ -11,6 +11,17 @@ const Servico = sequelize.define('Servico', {
     type: DataTypes.STRING(100),
     allowNull: false
   },
+
+  grupo: {
+  type: DataTypes.STRING(50),
+  allowNull: false
+},
+
+variacao: {
+  type: DataTypes.STRING(50),
+  allowNull: true
+},
+
   descricao: {
     type: DataTypes.TEXT
   },
