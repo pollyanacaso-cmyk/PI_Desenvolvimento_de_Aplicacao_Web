@@ -21,9 +21,11 @@ function obterSegredo() {
     return segredoEmUso;
 }
 
-function gerarToken(administrador) {
+// papel: 'admin' (padrão) ou 'cliente'. O papel precisa ir no token para que o
+// middleware saiba em qual tabela procurar o usuário (sub = id nessa tabela).
+function gerarToken(usuario, papel = 'admin') {
     return jwt.sign(
-        { sub: administrador.id, papel: 'admin' },
+        { sub: usuario.id, papel },
         obterSegredo(),
         {
             algorithm: 'HS256',
