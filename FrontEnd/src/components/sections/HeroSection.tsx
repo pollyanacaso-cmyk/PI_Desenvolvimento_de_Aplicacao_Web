@@ -17,7 +17,6 @@ export function HeroSection({ onNavigateBooking, onNavigateServices }: HeroSecti
   };
 
   const scrollToServices = () => {
-    // Tenta encontrar pelo ID 'servicos' ou pelo ID 'services-section'
     const element = document.getElementById('servicos') || document.getElementById('services-section');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
