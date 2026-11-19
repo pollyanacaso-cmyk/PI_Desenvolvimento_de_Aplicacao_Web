@@ -25,7 +25,9 @@ const listar = async (req, res) => {
     try {
         const where = {};
 
-        if (req.query.profissional_id !== undefined) {
+        if (req.perfil === 'profissional') where.profissional_id = req.usuario.id;
+
+        if (req.query.profissional_id !== undefined && req.perfil === 'admin') {
             const profissionalId = Number(req.query.profissional_id);
 
             if (!Number.isInteger(profissionalId) || profissionalId <= 0) {
@@ -87,7 +89,7 @@ const buscarPorId = async (req, res) => {
             include: [{ model: Profissional }]
         });
 
-        if (!bloqueio) {
+        if (!bloqueio || (req.perfil === 'profissional' && bloqueio.profissional_id !== req.usuario.id)) {
             return res.status(404).json({
                 mensagem: 'Bloqueio não encontrado.'
             });
@@ -106,7 +108,7 @@ const criar = async (req, res) => {
     try {
         const erros = [];
 
-        const profissionalId = Number(req.body.profissional_id);
+        const profissionalId = req.perfil === 'profissional' ? req.usuario.id : Number(req.body.profissional_id);
 
         if (!Number.isInteger(profissionalId) || profissionalId <= 0) {
             erros.push('O campo profissional_id deve ser um ID inteiro positivo.');
@@ -166,7 +168,7 @@ const criar = async (req, res) => {
             horario_fim: normalizarHorario(req.body.horario_fim),
             motivo,
             status: 'Bloqueado',
-            administrador_id: req.usuario.id
+            administrador_id: req.perfil === 'admin' ? req.usuario.id : null
         };
 
         const bloqueio = await BloqueioHorario.create(dados);
@@ -195,6 +197,23 @@ const criar = async (req, res) => {
     }
 };
 
+const liberarDomingo = async (req, res) => {
+    try {
+        const data = req.body.data;
+        if (!validarData(data)) return res.status(400).json({ mensagem: 'Informe uma data válida.' });
+        const [ano, mes, dia] = data.split('-').map(Number);
+        if (new Date(ano, mes - 1, dia).getDay() !== 0) return res.status(400).json({ mensagem: 'A data informada não é um domingo.' });
+        const profissionalId = req.perfil === 'profissional' ? req.usuario.id : Number(req.body.profissional_id);
+        if (!Number.isInteger(profissionalId) || profissionalId <= 0) return res.status(400).json({ mensagem: 'Profissional inválido.' });
+        const profissional = await Profissional.findByPk(profissionalId);
+        if (!profissional) return res.status(404).json({ mensagem: 'Profissional não encontrado.' });
+        const existente = await BloqueioHorario.findOne({ where: { profissional_id: profissionalId, data, status: 'Liberado' } });
+        if (existente) return res.status(200).json({ mensagem: 'Este domingo já está liberado.', bloqueio: existente });
+        const bloqueio = await BloqueioHorario.create({ profissional_id: profissionalId, data, horario_inicio: '08:00:00', horario_fim: '20:00:00', motivo: 'Liberação excepcional de domingo pelo profissional', status: 'Liberado', liberado_por_id: req.usuario.id, data_liberacao: new Date() });
+        return res.status(201).json({ mensagem: 'Domingo liberado para este profissional.', bloqueio });
+    } catch (erro) { console.error(erro); return res.status(500).json({ mensagem: 'Não foi possível liberar o domingo.' }); }
+};
+
 const liberar = async (req, res) => {
     try {
         const id = lerIdDaRota(req, res);
@@ -205,10 +224,8 @@ const liberar = async (req, res) => {
 
         const bloqueio = await BloqueioHorario.findByPk(id);
 
-        if (!bloqueio) {
-            return res.status(404).json({
-                mensagem: 'Bloqueio não encontrado.'
-            });
+        if (!bloqueio || (req.perfil === 'profissional' && bloqueio.profissional_id !== req.usuario.id)) {
+            return res.status(404).json({ mensagem: 'Bloqueio não encontrado.' });
         }
 
         if (bloqueio.status === 'Liberado') {
@@ -219,7 +236,7 @@ const liberar = async (req, res) => {
 
         await bloqueio.update({
             status: 'Liberado',
-            liberado_por_id: req.usuario.id,
+            liberado_por_id: req.perfil === 'admin' ? req.usuario.id : null,
             data_liberacao: new Date()
         });
 
@@ -239,5 +256,6 @@ module.exports = {
     listar,
     buscarPorId,
     criar,
+    liberarDomingo,
     liberar
 };
