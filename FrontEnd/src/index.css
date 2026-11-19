@@ -1,0 +1,6 @@
+/* 
+  Importação principal do Tailwind CSS (versão v4).
+  Escolhemos o Tailwind para estilizar o site porque ele deixa o código leve e responsivo.
+  Ele analisa o nosso projeto e inclui no final apenas os estilos que realmente usamos.
+*/
+@import "tailwindcss";
