@@ -123,4 +123,4 @@ export function limparSessao(): void {
     // noop
   }
   notificarSessao();
-}
+} 
