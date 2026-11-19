@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const { Profissional } = require('../models');
 const { tratarTexto } = require('../utils/texto');
 
@@ -38,6 +39,7 @@ function validarDados(dados, parcial = false) {
 const listar = async (req, res) => {
     try {
         const profissionais = await Profissional.findAll({
+            attributes: { exclude: ['senha_hash'] },
             order: [['nome', 'ASC']]
         });
 
@@ -61,7 +63,7 @@ const buscarPorId = async (req, res) => {
             });
         }
 
-        const profissional = await Profissional.findByPk(id);
+        const profissional = await Profissional.findByPk(id, { attributes: { exclude: ['senha_hash'] } });
 
         if (!profissional) {
             return res.status(404).json({
@@ -86,6 +88,7 @@ const criar = async (req, res) => {
             especializacao: req.body.especializacao,
             telefone: req.body.telefone,
             email: req.body.email,
+            senha_hash: req.body.senha ? await bcrypt.hash(String(req.body.senha), 10) : undefined,
             descricao: req.body.descricao,
             ativo: req.body.ativo === undefined ? true : req.body.ativo
         };
@@ -101,9 +104,10 @@ const criar = async (req, res) => {
 
         const profissional = await Profissional.create(dados);
 
+        const { senha_hash, ...profissionalSeguro } = profissional.toJSON();
         return res.status(201).json({
             mensagem: 'Profissional cadastrado com sucesso.',
-            profissional
+            profissional: profissionalSeguro
         });
     } catch (erro) {
         console.error(erro);
@@ -124,7 +128,7 @@ const atualizar = async (req, res) => {
             });
         }
 
-        const profissional = await Profissional.findByPk(id);
+        const profissional = await Profissional.findByPk(id, { attributes: { exclude: ['senha_hash'] } });
 
         if (!profissional) {
             return res.status(404).json({
@@ -137,6 +141,7 @@ const atualizar = async (req, res) => {
             'especializacao',
             'telefone',
             'email',
+            'senha',
             'descricao',
             'ativo'
         ];
@@ -144,8 +149,8 @@ const atualizar = async (req, res) => {
         const dados = {};
 
         for (const campo of camposPermitidos) {
-            if (req.body[campo] !== undefined) {
-                dados[campo] = req.body[campo];
+            if (req.body[campo] !== undefined && !(campo === 'senha' && String(req.body[campo]).trim() === '')) {
+                dados[campo === 'senha' ? 'senha_hash' : campo] = campo === 'senha' ? await bcrypt.hash(String(req.body[campo]), 10) : req.body[campo];
             }
         }
 
@@ -166,9 +171,10 @@ const atualizar = async (req, res) => {
 
         await profissional.update(dados);
 
+        const { senha_hash, ...profissionalSeguro } = profissional.toJSON();
         return res.status(200).json({
             mensagem: 'Profissional atualizado com sucesso.',
-            profissional
+            profissional: profissionalSeguro
         });
     } catch (erro) {
         console.error(erro);
@@ -189,7 +195,7 @@ const remover = async (req, res) => {
             });
         }
 
-        const profissional = await Profissional.findByPk(id);
+        const profissional = await Profissional.findByPk(id, { attributes: { exclude: ['senha_hash'] } });
 
         if (!profissional) {
             return res.status(404).json({
