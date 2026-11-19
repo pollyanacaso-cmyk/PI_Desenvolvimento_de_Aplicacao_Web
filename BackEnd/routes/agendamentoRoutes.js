@@ -1,11 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const agendamentoController = require('../controllers/agendamentoController');
-
-router.get('/', agendamentoController.listar);
-router.get('/:id', agendamentoController.buscarPorId);
-router.post('/', agendamentoController.criar);
-router.put('/:id', agendamentoController.atualizar);
-router.delete('/:id', agendamentoController.remover);
-
+const router = require('express').Router();
+const controller = require('../controllers/agendamentoController');
+const autenticarToken = require('../middlewares/autenticarToken');
+const autorizarPorPerfil = require('../middlewares/autorizarPorPerfil');
+router.get('/agenda-dia', controller.consultarAgendaDia);
+router.get('/', autenticarToken, autorizarPorPerfil('cliente', 'admin', 'profissional'), controller.listar);
+router.get('/:id', autenticarToken, autorizarPorPerfil('cliente', 'admin', 'profissional'), controller.buscarPorId);
+router.post('/', autenticarToken, autorizarPorPerfil('cliente'), controller.criar);
+router.put('/:id', autenticarToken, autorizarPorPerfil('admin', 'profissional'), controller.atualizar);
+router.patch('/:id/cancelar', autenticarToken, autorizarPorPerfil('cliente'), controller.cancelarPeloCliente);
+router.delete('/:id', autenticarToken, autorizarPorPerfil('admin', 'cliente'), controller.remover);
 module.exports = router;
