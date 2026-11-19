@@ -1,6 +1,5 @@
 import { MapPin, Clock } from 'lucide-react';
 
-// Link do salão no Google Maps. Troque pelo link real (Google Maps > Compartilhar > Copiar link).
 const LINK_GOOGLE_MAPS =
   'https://www.google.com/maps/search/?api=1&query=Ke+Bella+Esp%C3%ADrito+Santo+do+Pinhal+SP';
 
