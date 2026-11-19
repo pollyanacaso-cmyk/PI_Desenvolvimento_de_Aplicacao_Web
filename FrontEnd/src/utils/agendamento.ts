@@ -161,4 +161,4 @@ export function separarConflitantes(
   }
 
   return { mantidos, adiados };
-}
+} 
